@@ -12,45 +12,83 @@ public class Login extends JFrame implements ActionListener {
 
     Login() {
 
-        setTitle("Library Login");
-        setSize(350, 200);
-        setLayout(new GridLayout(3, 2));
+        setTitle("📚 Library Login");
+        setSize(500, 350);
+        setLayout(new BorderLayout());
 
-        add(new JLabel("Username:"));
+        // ===== MAIN PANEL (BACKGROUND) =====
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(new Color(220, 235, 250));
+        mainPanel.setLayout(new GridBagLayout());
+
+        // ===== LOGIN CARD =====
+        JPanel card = new JPanel();
+        card.setPreferredSize(new Dimension(300, 200));
+        card.setBackground(Color.WHITE);
+        card.setLayout(null);
+        card.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
+        // ===== TITLE =====
+        JLabel title = new JLabel("Login");
+        title.setBounds(120, 10, 100, 30);
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        card.add(title);
+
+        // ===== USERNAME =====
+        JLabel userLabel = new JLabel("Username");
+        userLabel.setBounds(30, 50, 100, 20);
+        card.add(userLabel);
+
         userField = new JTextField();
-        add(userField);
+        userField.setBounds(30, 70, 230, 25);
+        card.add(userField);
 
-        add(new JLabel("Password:"));
+        // ===== PASSWORD =====
+        JLabel passLabel = new JLabel("Password");
+        passLabel.setBounds(30, 100, 100, 20);
+        card.add(passLabel);
+
         passField = new JPasswordField();
-        add(passField);
+        passField.setBounds(30, 120, 230, 25);
+        card.add(passField);
 
+        // ===== BUTTON =====
         loginBtn = new JButton("Login");
-        add(loginBtn);
+        loginBtn.setBounds(90, 155, 120, 30);
+        loginBtn.setBackground(new Color(70, 130, 180));
+        loginBtn.setForeground(Color.WHITE);
+        loginBtn.setFocusPainted(false);
+        card.add(loginBtn);
+
+        mainPanel.add(card);
+        add(mainPanel, BorderLayout.CENTER);
 
         loginBtn.addActionListener(this);
 
         connectDB();
 
-        setVisible(true);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
     }
 
+    // ===== DATABASE CONNECTION =====
     void connectDB() {
         try {
-
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/library_db?useSSL=false&allowPublicKeyRetrieval=true",
+                    "jdbc:mysql://localhost:3306/library_db",
                     "root",
                     "0786"
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, e.toString());
         }
     }
 
+    // ===== LOGIN ACTION =====
     public void actionPerformed(ActionEvent e) {
 
         try {
@@ -60,8 +98,14 @@ public class Login extends JFrame implements ActionListener {
                 return;
             }
 
-            String user = userField.getText();
-            String pass = new String(passField.getPassword());
+            String user = userField.getText().trim();
+            String pass = new String(passField.getPassword()).trim();
+
+            // INPUT VALIDATION
+            if (user.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "❌ Enter Username & Password");
+                return;
+            }
 
             PreparedStatement pst = con.prepareStatement(
                     "SELECT * FROM users WHERE username=? AND password=?"
@@ -73,14 +117,15 @@ public class Login extends JFrame implements ActionListener {
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
+                JOptionPane.showMessageDialog(this, "✅ Login Successful!");
                 new Dashboard();
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Invalid Login!");
+                JOptionPane.showMessageDialog(this, "❌ Invalid Login!");
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, ex.toString());
         }
     }
 
